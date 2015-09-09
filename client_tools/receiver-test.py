@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+
+This is an example client-end script for listening to vla-slave messages for the LWA.
+
+"""
+
+
 import os
 import sys
 import math
