@@ -26,7 +26,7 @@ except ImportError:
 from collections import deque
 from datetime import datetime, timedelta
 
-from lsl import astro
+#from lsl import astro
 
 __version__ = '0.0'
 __revision__ = '$Rev: 0 $'
@@ -280,25 +280,25 @@ class Communicate(object):
 		data = struct.unpack('>40l', rawData)
 		
 		# Figure out the notification type
-		frbType = data[0]
-		if frbType == 2:
-			frbType = "Test"
-		elif frbType == 3:
-			frbType = "Iamalive"
-		elif frbType == 4:
-			frbType = "Kill"
-		elif frbType == 11:
-			frbType = "VLA_FRB_SESSION"
-		elif frbType == 12:
-			frbType = "VLA_FRB_TRIGGER"
+		notifyType = data[0]
+		if notifyType == 2:
+			notifyType = "Test"
+		elif notifyType == 3:
+			notifyType = "Iamalive"
+		elif notifyType == 4:
+			notifyType = "Kill"
+		elif notifyType == 11:
+			notifyType = "VLA_FRB_SESSION"
+		elif notifyType == 12:
+			notifyType = "VLA_FRB_TRIGGER"
 		else:
-			frbType = "Unknown"
+			notifyType = "Unknown"
 			
 		# Serial number
 		sn = data[1]
 		
 		# Event name
-		eventName = "%s #%i" % (frbType, data[4])
+		eventName = "%s #%i" % (notifyType, data[4])
 		
 		# Event timestamp
 		jd = data[5] + 40000 + data[6]/100.0/86400.0 + astro.MJD_OFFSET
@@ -313,7 +313,7 @@ class Communicate(object):
 		if data[39] != 10:
 			self.logger.warning("Packet '%s' with size %i B may be invalid because of an invalid terminator", rawData, len(rawData))
 			
-		return frbType, sn, eventName, eventTimestamp, eventRA, eventDec, eventAdd
+		return notifyType, sn, eventName, eventTimestamp, eventRA, eventDec, eventAdd
 		
 	def processNotification(self, data):
 		"""
@@ -326,24 +326,24 @@ class Communicate(object):
 		  * reference number
 		"""
 		
-		frbType, sn, eventName, eventTimestamp, eventRA, eventDec, eventAdd = self.parsePacket(data)
+		notifyType, sn, eventName, eventTimestamp, eventRA, eventDec, eventAdd = self.parsePacket(data)
 		
-		if frbType in ('Unknown', 'Invalid'):
-			self.logger.error("Unknown FRB notification type '%s', dropping", frbType)
+		if notifyType in ('Unknown', 'Invalid'):
+			self.logger.error("Unknown FRB notification type '%s', dropping", notifyType)
 			return None, None, None, None
 			
-		elif frbType in ('Iamalive',):
+		elif notifyType in ('Iamalive',):
 			self.logger.debug("'Iamalive' packet received with S/N %i, dropping", sn)
 			return None, None, None, None
 			
-		elif frbType in ('Kill',):
+		elif notifyType in ('Kill',):
 			self.logger.debug("'Kill' packet received with S/N %i, shutting down connection", sn)
 			self.client.close()
 			self.client = None
 			
 			return None, None, None, None
 			
-		elif frbType in ('VLA_FRB_TEST',):
+		elif notifyType in ('VLA_FRB_TEST',):
 			self.logger.debug("'VLA_FRB_TEST' packet received with S/N %i, dropping", sn)
 			return None, None, None, None
 			
