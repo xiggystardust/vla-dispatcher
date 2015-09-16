@@ -1,1 +1,5 @@
 # vla-slave
+
+
+Dependencies: 
+lsl
