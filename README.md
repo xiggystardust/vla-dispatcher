@@ -1,5 +1,1 @@
-# vla-slave
-
-
-Dependencies: 
-lsl
+# vla-dispatcher

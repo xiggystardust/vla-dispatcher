@@ -26,7 +26,7 @@ except ImportError:
 from collections import deque
 from datetime import datetime, timedelta
 
-#from lsl import astro
+
 
 __version__ = '0.0'
 __revision__ = '$Rev: 0 $'
@@ -122,6 +122,33 @@ def getTime():
 	mpm = int(math.floor( (hour*3600 + minute*60 + second)*1000 + millisecond ))
 	
 	return (mjd, mpm)
+
+
+# A few time conversion tools...
+"""                                                                                                        
+Offset in days between UNIX time (epoch 1970/01/01) and standard Julian day.                               
+"""
+UNIX_OFFSET = 2440587.5
+"""                                                                                                        
+The number of seconds in one day                                                                           
+"""
+SECS_IN_DAY = 86400.0
+"""                                                                                                        
+Offset in days between standary Julian day and modified Julian day.                                        
+"""
+MJD_OFFSET = 2400000.5
+def utcjd_to_unix(utcJD):
+	"""                                                                                                
+        Get UNIX time value for a given UTC JD value.                                                      
+                                                                                                           
+        Param: utcJD - The UTC JD time (float).                                                            
+                                                                                                           
+        Returns: The UNIX time                                                                             
+        """
+
+	unixTime = (utcJD - UNIX_OFFSET) * SECS_IN_DAY
+        return unixTime
+
 
 
 class Communicate(object):
@@ -301,8 +328,8 @@ class Communicate(object):
 		eventName = "%s #%i" % (notifyType, data[4])
 		
 		# Event timestamp
-		jd = data[5] + 40000 + data[6]/100.0/86400.0 + astro.MJD_OFFSET
-		eventTimestamp = astro.utcjd_to_unix(jd)
+		jd = data[5] + 40000 + data[6]/100.0/SECS_IN_DAY + MJD_OFFSET
+		eventTimestamp = utcjd_to_unix(jd)
 		
 		# Event position and uncertainty
 		eventRA = data[7] / 10000.0
