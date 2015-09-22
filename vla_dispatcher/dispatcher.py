@@ -34,6 +34,9 @@ telcaldir = '/home/mchammer/evladata/telcal'  # then yyyy/mm
 workdir = os.getcwd()     # assuming we start in workdir
 redishost = os.uname()[1]  # assuming we start on redis host
 
+
+
+
 class FRBController(object):
     """Listens for OBS packets and tells FRB processing about any
     notable scans."""
@@ -57,10 +60,39 @@ class FRBController(object):
             if self.dispatch:
                 logger.info("We're in DISPATCH mode! Will Dispatch commands.")
 
+                #!!!!Here is where it's at.
+                eventType = 'VLA_FRB_SESSION'
+
+                eventTime = config.startTime
+                eventRA   = config.ra_str
+                eventDec  = config.dec_str
+                eventDur  = 3600
+                eventSN   = 0 #!!! Make this a stripped out YYYYMMDDHHMMSS
+
+                # Wait until last command disappears (i.e. cmd file is deleted by server)
+                logger.info("Waiting for cmd queue to clear...")
+	        while os.path.exists(config['commands']):
+	            time.sleep(1)
+                print "Done"
+
+	        # Enqueue command
+                logger.info("Dispatching start command for job %s.\n" % config.projectID)
+                cmdfile = 'incoming.cmd'
+                fh = open(cmdfile,'w')
+                fh.write("%s %i %f %f %f %s" % (eventType, eventSN, eventTime, eventRA, eventDec, eventDur))
+	        fh.close()
+	        logger.info("Done, wrote %i bytes" % os.path.getsize(cmdfile))
+
+                #!!!!!!!!!!!!!!!!!!! Put in an on/off switch here for stop/start obs cmds?
+                
         else:
+            #!!!!!!!!!!!!!!!!!!! Put in an on/off switch here for stop/start obs cmds?
             logger.info("*** Skipping scan %d (%s, %s)." % (config.scan, config.scan_intent,config.projectID))
             #logger.info("*** Position is (%s , %s) and start time (%s; LST %s).\n" % (config.ra_str,config.dec_str,str(config.startTime),str(config.startLST)))
 
+
+
+            
 
 def monitor(intent, project, dispatch, verbose):
     """ Monitor of mcaf observation files. 
@@ -97,6 +129,9 @@ def monitor(intent, project, dispatch, verbose):
 
 
 
+
+
+        
 #@click.command()
 #@click.option('--intent', '-i', default='', help='Intent to trigger on')
 #@click.option('--project', '-p', default='', help='Project name to trigger on')
