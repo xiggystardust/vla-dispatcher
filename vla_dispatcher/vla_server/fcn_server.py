@@ -5,6 +5,9 @@
 Script for triggering observations of FRBs.
 
 This is the FCN server script that sends out commands.
+
+!!! MIGHT NEED TO BUILD A STOP_OBS TRIGGER
+
 """
 
 import os
@@ -330,7 +333,7 @@ def sendNotification(dests, eventType, eventSN, eventTime, eventRA, eventDec, ev
 			data = _buildPacket(eventType, packetSN, eventSN, eventTime, eventRA, eventDec, eventDuration=eventDuration, eventDM=eventDM)
 		except ValueError:
 			continue
-			
+		
 		## Send and receive
 		try:
 			socketOut.send(data)
@@ -363,7 +366,9 @@ def main(args):
 	and start the UDP command handler.
 	"""
 	
-	# Parse the command line
+        # !!! DO A CRITICAL TEST OF WRITE IN CURRENT WORKING DIRECTORY !!!
+
+        # Parse the command line
 	config = parseConfig(args)
 	
 	# Setup logging
@@ -385,6 +390,7 @@ def main(args):
 	shortRevision = __revision__.split()[1]
 	shortDate = ' '.join(__date__.split()[1:4])
 	
+	logger.info('-------------------------------------------------')
 	logger.info('Starting fcn_server.py with PID %i', os.getpid())
 	logger.info('VLA/FRB Coordination Network Notification Server')
 	logger.info('Version: %s', __version__)
@@ -393,26 +399,32 @@ def main(args):
 	logger.info('Current MJD: %i', mjd)
 	logger.info('Current MPM: %i', mpm)
 	logger.info('All dates and times are in UTC except where noted')
+	logger.info('-------------------------------------------------')
 	
-	# Setup the list of hosts to send notifications to
+
+		
+
+	# Check hostfile existence
 	if not os.path.exists(config['hosts']):
 		logger.critical('Cannot find the \'%s\' file', os.path.basename(config['hosts']))
 		sys.exit()
 		
+
+	# Setup the list of hosts to send notifications to
 	hosts = []
-	fh = open(config['hosts'], 'r')
-	for line in fh:
-		if line[0] == '#':
-			continue
-		if len(line) < 3:
-			continue
-		try:
-			ip, port = line.split(None, 1)
-			port = int(port, 10)
-			hosts.append( (ip,port) )
-		except Exception as e:
-			logger.warning('WARNING: Cannot parse line \'%s\': %s', line.rstrip(), str(e))
-	fh.close()
+	with open(config['hosts'], 'r') as fh:
+	        for line in fh:
+		        if line[0] == '#':
+			        continue
+		        if len(line) < 3:
+			        continue
+		        try:
+			        ip, port = line.split(None, 1)
+			        port = int(port, 10)
+			        hosts.append( (ip,port) )
+		        except Exception as e:
+			        logger.warning('WARNING: Cannot parse line \'%s\': %s', line.rstrip(), str(e))
+
 	logger.info('Loaded %i hosts from \'%s\'', len(hosts), os.path.basename(config['hosts']))
 	
 	# Report on the incoming command filename
@@ -433,7 +445,7 @@ def main(args):
 					fh = open(config['commands'], 'r')
 					data = fh.read()
 					fh.close()
-					
+					# Remove the commands file
 					os.unlink(config['commands'])
 				except IOError:
 					data = None
@@ -489,7 +501,7 @@ def main(args):
 		logger.info('Exiting on ctrl-c')
 		
 		hostsReached = sendNotification(hosts, 'KILL', 0, time.time(), 0, 0, snGenerator=snGenerator)
-		
+	
 	# If we've made it this far, we have finished so shutdown DP and close the 
 	# communications channels
 	tStop = time.time()
