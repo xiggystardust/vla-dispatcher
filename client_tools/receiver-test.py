@@ -87,7 +87,7 @@ def parseConfig(args):
 	
 	# Validate
 	if len(args) != 2:
-		raise RuntimeError("Must provide post a IP address and port for this host")
+		raise RuntimeError("Must provide a valid IP address and port for this host")
 		
 	# Return configuration
 	return config
