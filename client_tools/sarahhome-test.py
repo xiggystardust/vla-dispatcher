@@ -278,12 +278,13 @@ class Communicate(object):
 
 					#unpacked_data = struct.unpack('>64sssd', packed_data)
 
-					if (command in "VLA_FRB_SESSION_START"):
-						# Start observing or not.
-						self.logger.info("Found session start with info: " % ' '.join(packed_data))
-					elif (command in "VLA_FRB_SESSION_END"):
-						# Terminate the current observation.
-						stop_it  = True 
+					if (command is not None):
+						if (command in "VLA_FRB_SESSION_START"):
+							# Start observing or not.
+							self.logger.info("Found session start with info: " % ' '.join(packed_data))
+						elif (command in "VLA_FRB_SESSION_END"):
+							# Terminate the current observation.
+							stop_it  = True 
 
 
 					#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
