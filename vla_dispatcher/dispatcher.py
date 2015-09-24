@@ -79,7 +79,7 @@ class FRBController(object):
                         eventRA   = config.ra_deg
                         eventDec  = config.dec_deg
                         eventDur  = -1. # To signify "stop obs" command.
-                        eventSN = int(dispatched[config.projectID[1]])
+                        eventSN = int(dispatched[config.projectID][1])
                         do_dispatch = True
                         
                         # Remove project from dispatched tracker and check for unresolved jobs.
