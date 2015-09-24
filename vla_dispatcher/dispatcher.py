@@ -68,37 +68,49 @@ class FRBController(object):
 
             # If we're not in listening mode, take action
             if self.dispatch:
+
+                # Check whether obs has completed, obs is continuing, or obs is a new obs.
+                do_dispatch = False
                 if config.source in 'FINISH':
                     if config.projectID in dispatched:
-                        #!!!Dispatch "end obs" command
+                        # Set "finish" parameters.
+                        eventType = 'VLA_FRB_SESSION'
+                        eventTime = config.startTime
+                        eventRA   = config.ra_deg
+                        eventDec  = config.dec_deg
+                        eventDur  = -1. # To signify "stop obs" command.
+                        eventSN = int(dispatched[config.projectID[1]])
+                        do_dispatch = True
+                        
+                        # Remove project from dispatched tracker and check for unresolved jobs.
                         del dispatched[config.projectID]
                         if len(dispatched) is not 0:
                             logger.debug("Dispatched jobs remaining:" % '\n'.join(['%s %s' % (key, value) for (key, value) in dispatched.items()]))
+
                 elif ('TARGET' not in config.scan_intent):
                     logger.info("This is not a target scan. Will take no action.")
-                elif (config.projectID not in list(dispatched.keys())) and (config.source not in dispatched[projectID]):
+                elif (config.projectID in list(dispatched.keys())) and (config.source in dispatched[config.projectID]):
                     logger.info("Project %s already dispatched for target %s" % (config.projectID, config.source))
                 else:
-                #!!! CHECK IF PROJECT HAS ALREADY BEEN DISPATCHED
                 #!!! CHECK FOR FINAL MESSAGE; SHOULD WE SEND A STOP COMMAND? REMOVE FROM dispatched IF SENT.
-                #!!! SKIP SCAN IF NOT FINAL AND ALREADY DISPATCHED.
-
-                #!!!!Here is where it's at.
-                    logger.info("Will dispatch %s at position %s %s" % (config.projectID,config.ra_str,config.dec_str))
-
-                    # Add dispatched project and target to dispatched tracker.
-                    dispatched[config.projectID] = config.source
+                    logger.info("Will dispatch %s for position %s %s" % (config.projectID,config.ra_str,config.dec_str))
                     
+                    # Event serial number (eventSN) is UTC YYMMDDHHMM.
+                    # This convention will work up to and including the year 2021.
                     eventType = 'VLA_FRB_SESSION'
-
                     eventTime = config.startTime
                     eventRA   = config.ra_deg
                     eventDec  = config.dec_deg
-                    eventDur  = 3900. # 1 hour + 5 minutes auto stop-obs
-                    # Event serial number is UTC YYMMDDHHMM.
-                    # This convention will work up to and including the year 2021.
+                    eventDur  = 3900. # In seconds. 1 hour + 5 minutes auto stop-obs. Positive number signifies "start obs" command"
                     eventSN = int(strftime("%y%m%d%H%M",gmtime()))
+                    do_dispatch = True
 
+                    # Add dispatched project and target to dispatched tracker.
+                    dispatched[config.projectID] = (config.source,eventSN)
+
+                
+                # Is this a command we actually want to dispatch?
+                if do_dispatch:
                     # Wait until last command disappears (i.e. cmd file is deleted by server)
                     cmdfile = 'incoming.cmd'
                     if os.path.exists(cmdfile):
@@ -107,7 +119,10 @@ class FRBController(object):
                         time.sleep(1)
 
                     # Enqueue command
-                    logger.info("Dispatching start command for job %s." % config.projectID)
+                    if (eventDur>0):
+                        logger.info("Dispatching START command for obs serial# %s." % eventSN)
+                    else:
+                        logger.info("Dispatching STOP command for obs serial# %s." % eventSN)
                     fh = open(cmdfile,'w')
                     fh.write("%s %i %f %f %f %f" % (eventType, eventSN, eventTime, eventRA, eventDec, eventDur))
                     fh.close()
