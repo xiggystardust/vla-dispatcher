@@ -60,7 +60,7 @@ class FRBController(object):
 
         # If intent and project are good, print stuff.
         if (self.intent in config.scan_intent or self.intent is "") and (self.project in config.projectID or self.project is ""):
-            if config.source is "FINISH":
+            if config.source in "FINISH":
                 logger.info("*** Project %s has finished (source=%s)" % (config.projectID,config.source))
             else:
                 logger.info("*** Scan %d contains desired intent (%s=%s) and project (%s=%s)." % (config.scan, config.scan_intent,self.intent, config.projectID,self.project))
@@ -86,6 +86,8 @@ class FRBController(object):
                         del dispatched[config.projectID]
                         if len(dispatched) is not 0:
                             logger.debug("Dispatched jobs remaining:" % '\n'.join(['%s %s' % (key, value) for (key, value) in dispatched.items()]))
+                    else:
+                        logger.debug("Finished SB is not in dispatched list.")
 
                 elif ('TARGET' not in config.scan_intent):
                     logger.info("This is not a target scan. Will take no action.")
