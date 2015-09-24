@@ -307,12 +307,12 @@ class Communicate(object):
 							if eventDur > 0:
 								# DECIDE WHETHER TO START OBSERVATION.
 								self.logger.info("Found START notice for session %s" % eventName)
-								self.logger.debug("Session info: " % ' '.join(packed_data))
+								self.logger.debug("Session info: " % ' '.join(str(val) for val in packed_data))
 								self.logger.info("I will now observe RA/Dec %d %d for %d seconds." % (eventRA,eventDec,eventDur))
 							else:
 								# DECIDE WHETHER TO STOP OBSERVATION.
 								self.logger.info("Found END notice for session %s" % eventName)
-								self.logger.debug("Session info: " % ' '.join(packed_data))
+								self.logger.debug("Session info: " % ' '.join(str(val) for val in packed_data))
 								self.logger.info("I will now CEASE observation of (%d, %d)." % (eventRA,eventDec))
 
 					#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!H
@@ -502,7 +502,7 @@ def main(args):
 	
 	# Loop and process the MCS data packets as they come in - exit if ctrl-c is 
 	# received
-	logger.info('Ready to communicate')
+	logger.info('Receiving line open.')
 	while True:
 		try:
 			frbComms.receiveNotification()
