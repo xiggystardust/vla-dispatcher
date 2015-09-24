@@ -307,13 +307,13 @@ class Communicate(object):
 							if eventDur > 0:
 								# DECIDE WHETHER TO START OBSERVATION.
 								self.logger.info("Found START notice for session %s" % eventName)
-								self.logger.debug("Session info: " % ' '.join(str(val) for val in packed_data))
-								self.logger.info("I will now observe RA/Dec %d %d for %d seconds." % (eventRA,eventDec,eventDur))
+								self.logger.debug("Session info: %s" % ' '.join(str(val) for val in packed_data))
+								self.logger.info("I will now observe RA/Dec %f %f for %f seconds." % (eventRA,eventDec,eventDur))
 							else:
 								# DECIDE WHETHER TO STOP OBSERVATION.
 								self.logger.info("Found END notice for session %s" % eventName)
-								self.logger.debug("Session info: " % ' '.join(str(val) for val in packed_data))
-								self.logger.info("I will now CEASE observation of (%d, %d)." % (eventRA,eventDec))
+								self.logger.debug("Session info: %s" % ' '.join(str(val) for val in packed_data))
+								self.logger.info("I will now CEASE observation of (%f, %f)." % (eventRA,eventDec))
 
 					#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!H
 					#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
