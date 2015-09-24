@@ -22,6 +22,7 @@ import datetime
 import os
 import asyncore
 import logging
+from time import gmtime,strftime
 from optparse import OptionParser
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -29,12 +30,10 @@ logger = logging.getLogger(__name__)
 
 import mcaf_library
 
-# set up
+# 
 telcaldir = '/home/mchammer/evladata/telcal'  # then yyyy/mm
 workdir = os.getcwd()     # assuming we start in workdir
 redishost = os.uname()[1]  # assuming we start on redis host
-
-
 
 
 class FRBController(object):
@@ -64,24 +63,25 @@ class FRBController(object):
                 eventType = 'VLA_FRB_SESSION'
 
                 eventTime = config.startTime
-                eventRA   = config.ra_str
-                eventDec  = config.dec_str
+                eventRA   = config.ra_deg
+                eventDec  = config.dec_deg
                 eventDur  = 3600
-                eventSN   = 0 #!!! Make this a stripped out YYYYMMDDHHMMSS
+                # Event serial number is UTC YYMMDDHHMM.
+                # This convention will work up to and including the year 2021.
+                eventSN   = strftime("%y%m%d%H%M",gmtime()) 
 
                 # Wait until last command disappears (i.e. cmd file is deleted by server)
+                cmdfile = 'incoming.cmd'
                 logger.info("Waiting for cmd queue to clear...")
-	        while os.path.exists(config['commands']):
+	        while os.path.exists(cmdfile):
 	            time.sleep(1)
-                print "Done"
 
 	        # Enqueue command
-                logger.info("Dispatching start command for job %s.\n" % config.projectID)
-                cmdfile = 'incoming.cmd'
+                logger.info("Dispatching start command for job %s." % config.projectID)
                 fh = open(cmdfile,'w')
-                fh.write("%s %i %f %f %f %s" % (eventType, eventSN, eventTime, eventRA, eventDec, eventDur))
+                fh.write("%s %i %f %s %s %s" % (eventType, eventSN, eventTime, eventRA, eventDec, eventDur))
 	        fh.close()
-	        logger.info("Done, wrote %i bytes" % os.path.getsize(cmdfile))
+	        logger.info("Done, wrote %i bytes.\n" % os.path.getsize(cmdfile))
 
                 #!!!!!!!!!!!!!!!!!!! Put in an on/off switch here for stop/start obs cmds?
                 
