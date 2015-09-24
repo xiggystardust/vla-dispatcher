@@ -22,7 +22,7 @@ import datetime
 import os
 import asyncore
 import logging
-import time
+from time import gmtime,strftime
 from optparse import OptionParser
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -37,7 +37,7 @@ import mcaf_library
 
 # GLOBAL VARIABLES
 workdir = os.getcwd() # assuming we start in workdir
-dispatched = [];      # Keep global list of dispatched commands
+dispatched = {};      # Keep global list of dispatched commands
 
 
 
@@ -60,51 +60,61 @@ class FRBController(object):
 
         # If intent and project are good, print stuff.
         if (self.intent in config.scan_intent or self.intent is "") and (self.project in config.projectID or self.project is ""):
-            logger.info("*** Scan %d contains desired intent (%s=%s) and project (%s=%s)." % (config.scan, config.scan_intent,self.intent, config.projectID,self.project))
-            logger.info("*** Position of source %s is (%s , %s) and start time (%s; LST %s).\n" % (config.source,config.ra_str,config.dec_str,str(config.startTime),str(config.startLST)))
+            if config.source is "FINISH":
+                logger.info("*** Project %s has finished (source=%s)" % (config.projectID,config.source))
+            else:
+                logger.info("*** Scan %d contains desired intent (%s=%s) and project (%s=%s)." % (config.scan, config.scan_intent,self.intent, config.projectID,self.project))
+                logger.info("*** Position of source %s is (%s , %s) and start time (%s; LST %s)." % (config.source,config.ra_str,config.dec_str,str(config.startTime),str(config.startLST)))
 
             # If we're not in listening mode, take action
             if self.dispatch:
-                logger.info("We're in DISPATCH mode! Will Dispatch commands.")
-
-                ##if config.source is "FINISH":
-                ##    if config.projectID in dispatched:
-                ##        dispatched.remove(config.projectID)
-                ##    #!!!Dispatch "end obs" command
-                #if config.projectID in dispatched:
+                if config.source in 'FINISH':
+                    if config.projectID in dispatched:
+                        #!!!Dispatch "end obs" command
+                        del dispatched[config.projectID]
+                        if len(dispatched) is not 0:
+                            logger.debug("Dispatched jobs remaining:" % '\n'.join(['%s %s' % (key, value) for (key, value) in dispatched.items()]))
+                elif ('TARGET' not in config.scan_intent):
+                    logger.info("This is not a target scan. Will take no action.")
+                elif (config.projectID not in list(dispatched.keys())) and (config.source not in dispatched[projectID]):
+                    logger.info("Project %s already dispatched for target %s" % (config.projectID, config.source))
+                else:
                 #!!! CHECK IF PROJECT HAS ALREADY BEEN DISPATCHED
                 #!!! CHECK FOR FINAL MESSAGE; SHOULD WE SEND A STOP COMMAND? REMOVE FROM dispatched IF SENT.
                 #!!! SKIP SCAN IF NOT FINAL AND ALREADY DISPATCHED.
 
                 #!!!!Here is where it's at.
-                eventType = 'VLA_FRB_SESSION'
+                    logger.info("Will dispatch %s at position %s %s" % (config.projectID,config.ra_str,config.dec_str))
 
-                eventTime = config.startTime
-                eventRA   = config.ra_deg
-                eventDec  = config.dec_deg
-                eventDur  = 3600.
-                # Event serial number is UTC YYMMDDHHMM.
-                # This convention will work up to and including the year 2021.
-                eventSN = int(time.strftime("%y%m%d%H%M",time.gmtime()))
+                    # Add dispatched project and target to dispatched tracker.
+                    dispatched[config.projectID] = config.source
+                    
+                    eventType = 'VLA_FRB_SESSION'
 
-                # Wait until last command disappears (i.e. cmd file is deleted by server)
-                cmdfile = 'incoming.cmd'
-                #print cmdfile
-                logger.info("Waiting for cmd queue to clear...")
-	        while os.path.exists(cmdfile):
-	            time.sleep(1)
+                    eventTime = config.startTime
+                    eventRA   = config.ra_deg
+                    eventDec  = config.dec_deg
+                    eventDur  = 3900. # 1 hour + 5 minutes auto stop-obs
+                    # Event serial number is UTC YYMMDDHHMM.
+                    # This convention will work up to and including the year 2021.
+                    eventSN = int(strftime("%y%m%d%H%M",gmtime()))
 
-	        # Enqueue command
-                logger.info("Dispatching start command for job %s." % config.projectID)
-                fh = open(cmdfile,'w')
-                fh.write("%s %i %f %f %f %f" % (eventType, eventSN, eventTime, eventRA, eventDec, eventDur))
-	        fh.close()
-	        logger.info("Done, wrote %i bytes.\n" % os.path.getsize(cmdfile))
+                    # Wait until last command disappears (i.e. cmd file is deleted by server)
+                    cmdfile = 'incoming.cmd'
+                    if os.path.exists(cmdfile):
+                        logger.info("Waiting for cmd queue to clear...")
+                    while os.path.exists(cmdfile):
+                        time.sleep(1)
 
-                #!!!!!!!!!!!!!!!!!!! Put in an on/off switch here for stop/start obs cmds?
+                    # Enqueue command
+                    logger.info("Dispatching start command for job %s." % config.projectID)
+                    fh = open(cmdfile,'w')
+                    fh.write("%s %i %f %f %f %f" % (eventType, eventSN, eventTime, eventRA, eventDec, eventDur))
+                    fh.close()
+                    logger.info("Done, wrote %i bytes.\n" % os.path.getsize(cmdfile))
+
                 
         else:
-            #!!!!!!!!!!!!!!!!!!! Put in an on/off switch here for stop/start obs cmds?
             logger.info("*** Skipping scan %d (%s, %s)." % (config.scan, config.scan_intent,config.projectID))
             #logger.info("*** Position is (%s , %s) and start time (%s; LST %s).\n" % (config.ra_str,config.dec_str,str(config.startTime),str(config.startLST)))
 
