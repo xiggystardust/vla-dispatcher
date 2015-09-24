@@ -277,6 +277,9 @@ class Communicate(object):
 					destination, command, packed_data, reference = self.processNotification(data)
 
 
+					#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					#!!! Here's where to trigger decision-making for whether to observe or not. !!!
+					#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					if (packed_data is not None):
 					        #unpacked_data = struct.unpack('>64sffd', packed_data)
 					        # struct is packed as eventName, eventRA, eventDec, eventTimestamp
@@ -286,11 +289,10 @@ class Communicate(object):
 						elif (packed_data[0] in "VLA_FRB_SESSION_END"):
 							# Terminate the current observation.
 							stop_it  = True 
+					#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-					#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-					#!!! Here's where to trigger decision-making for whether to observe or not. !!!
-					#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 				except Exception, e:
 					exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -376,7 +378,7 @@ class Communicate(object):
 		
 		notifyType, sn, eventName, eventTimestamp, eventRA, eventDec, eventAdd = self.parsePacket(data)
 		
-		self.logger.info("Checking packet type %s" % notifyType)
+		self.logger.debug("Checking packet type %s" % notifyType)
 		if notifyType in ('Unknown', 'Invalid'):
 			self.logger.error("Unknown FRB notification type '%s' (serial# %i), dropping", notifyType,sn)
 			return None, None, None, None
