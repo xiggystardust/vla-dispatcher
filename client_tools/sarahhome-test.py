@@ -271,18 +271,19 @@ class Communicate(object):
 						
 					# Below is a four-element tuple of:
 					# * destination
-					# * command name (i.e. "VLA_FRB_SESSION")
+					# * command name (i.e. "TRF")
 					# * command arguments (i.e. RA, Dec, etc.)
 					# * reference number
 					destination, command, packed_data, reference = self.processNotification(data)
 
-					#unpacked_data = struct.unpack('>64sssd', packed_data)
 
-					if (command is not None):
-						if (command in "VLA_FRB_SESSION_START"):
+					if (packed_data is not None):
+					        #unpacked_data = struct.unpack('>64sffd', packed_data)
+					        # struct is packed as eventName, eventRA, eventDec, eventTimestamp
+						if (packed_data[0] in "VLA_FRB_SESSION_START"):
 							# Start observing or not.
 							self.logger.info("Found session start with info: " % ' '.join(packed_data))
-						elif (command in "VLA_FRB_SESSION_END"):
+						elif (packed_data[0] in "VLA_FRB_SESSION_END"):
 							# Terminate the current observation.
 							stop_it  = True 
 
@@ -352,8 +353,8 @@ class Communicate(object):
 		eventTimestamp = utcjd_to_unix(jd)
 		
 		# Event position and uncertainty
-		eventRA = data[7] #/ 10000.0
-		eventDec = data[8] #/ 10000.0
+		eventRA = data[7] / 10000.0
+		eventDec = data[8] / 10000.0
 		eventAdd = data[9]
 		
 		# Validation
@@ -375,16 +376,17 @@ class Communicate(object):
 		
 		notifyType, sn, eventName, eventTimestamp, eventRA, eventDec, eventAdd = self.parsePacket(data)
 		
+		self.logger.info("Checking packet type %s" % notifyType)
 		if notifyType in ('Unknown', 'Invalid'):
-			self.logger.error("Unknown FRB notification type '%s', dropping", notifyType)
+			self.logger.error("Unknown FRB notification type '%s' (serial# %i), dropping", notifyType,sn)
 			return None, None, None, None
 			
 		elif notifyType in ('Iamalive',):
-			self.logger.debug("'Iamalive' packet received with S/N %i, dropping", sn)
+			self.logger.debug("'Iamalive' packet received (serial# %i), dropping", sn)
 			return None, None, None, None
 			
 		elif notifyType in ('Kill',):
-			self.logger.debug("'Kill' packet received with S/N %i, shutting down connection", sn)
+			self.logger.debug("Remote kill request (serial# %i). Shutting down connection.", sn)
 			self.client.close()
 			self.client = None
 			

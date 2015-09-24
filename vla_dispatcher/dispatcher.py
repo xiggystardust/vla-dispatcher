@@ -30,11 +30,9 @@ logger = logging.getLogger(__name__)
 
 import mcaf_library
 
-# 
-telcaldir = '/home/mchammer/evladata/telcal'  # then yyyy/mm
-workdir = os.getcwd()     # assuming we start in workdir
-redishost = os.uname()[1]  # assuming we start on redis host
-
+# set up
+workdir = os.getcwd() # assuming we start in workdir
+dispatched = [];      # Keep global list of dispatched commands
 
 class FRBController(object):
     """Listens for OBS packets and tells FRB processing about any
@@ -58,6 +56,10 @@ class FRBController(object):
             # If we're not in listening mode, take action
             if self.dispatch:
                 logger.info("We're in DISPATCH mode! Will Dispatch commands.")
+
+                #!!! CHECK IF PROJECT HAS ALREADY BEEN DISPATCHED
+                #!!! CHECK FOR FINAL MESSAGE; SHOULD WE SEND A STOP COMMAND? REMOVE FROM dispatched IF SENT.
+                #!!! SKIP SCAN IF NOT FINAL AND ALREADY DISPATCHED.
 
                 #!!!!Here is where it's at.
                 eventType = 'VLA_FRB_SESSION'

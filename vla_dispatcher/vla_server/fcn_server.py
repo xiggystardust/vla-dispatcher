@@ -39,7 +39,6 @@ def usage(exitCode=None):
         print """fcn_server.py - VLA/FRB Coordination Network Notification Server
 
 Usage: fcn_server.py [OPTIONS]
-
 Options:
 -h, --help             Display this help information
 -f, --hosts-file       Hosts configuration file (Default = hosts.cfg)
@@ -318,7 +317,7 @@ def sendNotification(dests, eventType, eventSN, eventTime, eventRA, eventDec, ev
 		except KeyError:
 			### Try to open the port
 			try:
-				socketOut = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				socketOut = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #!!!
 				socketOut.settimeout(5)
 				socketOut.connect((ip, port))
 				
@@ -470,7 +469,7 @@ def main(args):
 						eventDM = None
 					logger.info("Found new %s command in \'%s\'", eventType, os.path.basename(config['commands']))
 					
-					### Send it along
+					### Send it along!H
 					hostsReached = sendNotification(hosts, eventType, eventSN, eventTime, eventRA, eventDec, eventDuration=eventDuration, eventDM=eventDM, snGenerator=snGenerator)
 					logger.debug("Sent '%s' to %i hosts", eventType, hostsReached)
 					
