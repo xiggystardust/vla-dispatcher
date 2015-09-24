@@ -22,7 +22,7 @@ import datetime
 import os
 import asyncore
 import logging
-from time import gmtime,strftime
+import time
 from optparse import OptionParser
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -30,9 +30,19 @@ logger = logging.getLogger(__name__)
 
 import mcaf_library
 
-# set up
+
+
+
+
+
+# GLOBAL VARIABLES
 workdir = os.getcwd() # assuming we start in workdir
 dispatched = [];      # Keep global list of dispatched commands
+
+
+
+
+
 
 class FRBController(object):
     """Listens for OBS packets and tells FRB processing about any
@@ -51,12 +61,17 @@ class FRBController(object):
         # If intent and project are good, print stuff.
         if (self.intent in config.scan_intent or self.intent is "") and (self.project in config.projectID or self.project is ""):
             logger.info("*** Scan %d contains desired intent (%s=%s) and project (%s=%s)." % (config.scan, config.scan_intent,self.intent, config.projectID,self.project))
-            logger.info("*** Position is (%s , %s) and start time (%s; LST %s).\n" % (config.ra_str,config.dec_str,str(config.startTime),str(config.startLST)))
+            logger.info("*** Position of source %s is (%s , %s) and start time (%s; LST %s).\n" % (config.source,config.ra_str,config.dec_str,str(config.startTime),str(config.startLST)))
 
             # If we're not in listening mode, take action
             if self.dispatch:
                 logger.info("We're in DISPATCH mode! Will Dispatch commands.")
 
+                ##if config.source is "FINISH":
+                ##    if config.projectID in dispatched:
+                ##        dispatched.remove(config.projectID)
+                ##    #!!!Dispatch "end obs" command
+                #if config.projectID in dispatched:
                 #!!! CHECK IF PROJECT HAS ALREADY BEEN DISPATCHED
                 #!!! CHECK FOR FINAL MESSAGE; SHOULD WE SEND A STOP COMMAND? REMOVE FROM dispatched IF SENT.
                 #!!! SKIP SCAN IF NOT FINAL AND ALREADY DISPATCHED.
@@ -67,13 +82,14 @@ class FRBController(object):
                 eventTime = config.startTime
                 eventRA   = config.ra_deg
                 eventDec  = config.dec_deg
-                eventDur  = 3600
+                eventDur  = 3600.
                 # Event serial number is UTC YYMMDDHHMM.
                 # This convention will work up to and including the year 2021.
-                eventSN   = strftime("%y%m%d%H%M",gmtime()) 
+                eventSN = int(time.strftime("%y%m%d%H%M",time.gmtime()))
 
                 # Wait until last command disappears (i.e. cmd file is deleted by server)
                 cmdfile = 'incoming.cmd'
+                #print cmdfile
                 logger.info("Waiting for cmd queue to clear...")
 	        while os.path.exists(cmdfile):
 	            time.sleep(1)
@@ -81,7 +97,7 @@ class FRBController(object):
 	        # Enqueue command
                 logger.info("Dispatching start command for job %s." % config.projectID)
                 fh = open(cmdfile,'w')
-                fh.write("%s %i %f %s %s %s" % (eventType, eventSN, eventTime, eventRA, eventDec, eventDur))
+                fh.write("%s %i %f %f %f %f" % (eventType, eventSN, eventTime, eventRA, eventDec, eventDur))
 	        fh.close()
 	        logger.info("Done, wrote %i bytes.\n" % os.path.getsize(cmdfile))
 
