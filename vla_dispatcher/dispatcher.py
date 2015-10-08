@@ -30,40 +30,10 @@ logger = logging.getLogger(__name__)
 
 import mcaf_library
 
-
-#!!! NEED To MAKE THIS PART OF MCAF_LIBRARY
-# A few time conversion tools...
-"""
-Offset in days between UNIX time (epoch 1970/01/01) and standard Julian day.
-"""
-UNIX_OFFSET = 2440587.5
-"""
-The number of seconds in one day
-"""
-SECS_IN_DAY = 86400.0
-"""
-Offset in days between standary Julian day and modified Julian day.
-"""
-MJD_OFFSET = 2400000.5
-def utcjd_to_unix(utcJD):
-        """
-        Get UNIX time value for a given UTC JD value.
-        Param: utcJD - The UTC JD time (float).
-        Returns: The UNIX time
-        """
-        unixTime = (utcJD - UNIX_OFFSET) * SECS_IN_DAY
-        return unixTime
-
-
-
 # GLOBAL VARIABLES
 workdir = os.getcwd() # assuming we start in workdir
 dispatched = {};      # Keep global list of dispatched commands
-
-
-
-
-
+MJD_OFFSET = 2400000.5 # Offset in days between standard Julian day and MJD
 
 class FRBController(object):
     """Listens for OBS packets and tells FRB processing about any
@@ -85,7 +55,7 @@ class FRBController(object):
                 logger.info("*** Project %s has finished (source=%s)" % (config.projectID,config.source))
             else:
                 logger.info("*** Scan %d contains desired intent (%s=%s) and project (%s=%s)." % (config.scan, config.scan_intent,self.intent, config.projectID,self.project))
-                logger.info("*** Position of source %s is (%s , %s) and start time (%s; unixtime %s)." % (config.source,config.ra_str,config.dec_str,str(config.startTime),str(utcjd_to_unix(config.startTime+MJD_OFFSET))))
+                logger.info("*** Position of source %s is (%s , %s) and start time (%s; unixtime %s)." % (config.source,config.ra_str,config.dec_str,str(config.startTime),str(mcaf_library.utcjd_to_unix(config.startTime+MJD_OFFSET)))
 
             # If we're not in listening mode, take action
 	    if self.dispatch:
@@ -96,7 +66,7 @@ class FRBController(object):
                     if config.projectID in dispatched:
                         # Set "finish" parameters.
                         eventType = 'VLA_FRB_SESSION'
-                        eventTime = utcjd_to_unix(config.startTime+MJD_OFFSET)
+                        eventTime = mcaf_library.utcjd_to_unix(config.startTime+MJD_OFFSET)
                         eventRA   = config.ra_deg
                         eventDec  = config.dec_deg
                         eventDur  = -1. # To signify "stop obs" command.

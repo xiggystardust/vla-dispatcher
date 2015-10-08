@@ -9,6 +9,29 @@ from jdcal import mjd_now
 
 logger = logging.getLogger(__name__)
 
+# A few time conversion tools...
+"""
+Offset in days between UNIX time (epoch 1970/01/01) and standard Julian day.
+"""
+UNIX_OFFSET = 2440587.5
+"""
+The number of seconds in one day
+"""
+SECS_IN_DAY = 86400.0
+"""
+Offset in days between standary Julian day and modified Julian day.
+"""
+MJD_OFFSET = 2400000.5
+def utcjd_to_unix(utcJD):
+        """
+        Get UNIX time value for a given UTC JD value.
+        Param: utcJD - The UTC JD time (float).
+        Returns: The UNIX time
+        """
+        unixTime = (utcJD - UNIX_OFFSET) * SECS_IN_DAY
+        return unixTime
+
+
 class McastClient(asyncore.dispatcher):
     """Generic class to receive the multicast XML docs."""
 
