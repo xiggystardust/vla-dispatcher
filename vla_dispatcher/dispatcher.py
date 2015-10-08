@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.7
+#!/usr/bin/env python2.7
 #
 # VLA DISPATCHER.
 #
@@ -85,10 +85,10 @@ class FRBController(object):
                 logger.info("*** Project %s has finished (source=%s)" % (config.projectID,config.source))
             else:
                 logger.info("*** Scan %d contains desired intent (%s=%s) and project (%s=%s)." % (config.scan, config.scan_intent,self.intent, config.projectID,self.project))
-                logger.info("*** Position of source %s is (%s , %s) and start time (%s; unixtime %s)." % (config.source,config.ra_str,config.dec_str,str(config.startTime),str(utcjd_to_unix(config.startTime+MJD_OFFSET)))
+                logger.info("*** Position of source %s is (%s , %s) and start time (%s; unixtime %s)." % (config.source,config.ra_str,config.dec_str,str(config.startTime),str(utcjd_to_unix(config.startTime+MJD_OFFSET))))
 
             # If we're not in listening mode, take action
-            if self.dispatch:
+	    if self.dispatch:
 
                 # Check whether obs has completed, obs is continuing, or obs is a new obs.
                 do_dispatch = False
@@ -121,7 +121,7 @@ class FRBController(object):
                     # Event serial number (eventSN) is UTC YYMMDDHHMM.
                     # This convention will work up to and including the year 2021.
                     eventType = 'VLA_FRB_SESSION'
-                    eventTime = config.startTime
+                    eventTime = utcjd_to_unix(config.startTime+MJD_OFFSET)
                     eventRA   = config.ra_deg
                     eventDec  = config.dec_deg
                     eventDur  = 3600. # In seconds. 1 hour + 5 minutes auto stop-obs. Positive number signifies "start obs" command"
