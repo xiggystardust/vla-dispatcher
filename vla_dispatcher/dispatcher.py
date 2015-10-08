@@ -103,7 +103,7 @@ class FRBController(object):
                     eventTime = config.startTime
                     eventRA   = config.ra_deg
                     eventDec  = config.dec_deg
-                    eventDur  = 3900. # In seconds. 1 hour + 5 minutes auto stop-obs. Positive number signifies "start obs" command"
+                    eventDur  = 3600. # In seconds. 1 hour + 5 minutes auto stop-obs. Positive number signifies "start obs" command"
                     eventSN = int(strftime("%y%m%d%H%M",gmtime()))
                     do_dispatch = True
 
