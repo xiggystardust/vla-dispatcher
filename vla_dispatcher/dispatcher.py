@@ -91,10 +91,10 @@ class FRBController(object):
                     # Event serial number (eventSN) is UTC YYMMDDHHMM.
                     # This convention will work up to and including the year 2021.
                     eventType = 'VLA_FRB_SESSION'
-                    eventTime = utcjd_to_unix(config.startTime+MJD_OFFSET)
+                    eventTime = mcaf_library.utcjd_to_unix(config.startTime+MJD_OFFSET)
                     eventRA   = config.ra_deg
                     eventDec  = config.dec_deg
-                    eventDur  = 3600. # In seconds. 1 hour + 5 minutes auto stop-obs. Positive number signifies "start obs" command"
+                    eventDur  = 10800. # In seconds. 1 hour + 5 minutes auto stop-obs. Positive number signifies "start obs" command"
                     eventSN = int(strftime("%y%m%d%H%M",gmtime()))
                     do_dispatch = True
 
