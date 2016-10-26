@@ -5,8 +5,10 @@ meta-data broadcast (position, observing set-up, etc), identify
 relevant events, and broadcast information about those events to
 approved clients running the client-end software.
 
-Currently this code is primarily used to enable automated coordinated
-observing between VLA and other interested (optical, radio, etc)
+The client-end software, described below, can be easily adapted to new
+observatories. Currently this code is primarily used to enable
+automated, coordinated observations of Fast Radio Bursts and other
+transients between VLA and other interested (optical, radio, etc)
 observatories.
 
 For info contact S. Burke-Spolaor (sarahbspolaor@gmail.com)
