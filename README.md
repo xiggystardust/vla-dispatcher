@@ -1,9 +1,17 @@
 # vla-dispatcher Readme file.
 
+The VLA Dispatcher is a framework to read the Jansky Very Large Array
+meta-data broadcast (position, observing set-up, etc), identify
+relevant events, and broadcast information about those events to
+approved clients running the client-end software.
+
+Currently this code is primarily used to enable automated coordinated
+observing between VLA and other interested (optical, radio, etc)
+observatories.
+
 For info contact S. Burke-Spolaor (sarahbspolaor@gmail.com)
 
-Server comms based on code by J. D. Dowell
-
+Server comms base adapted from code by J. D. Dowell
 
 ----------------------
 - On the server end: -
